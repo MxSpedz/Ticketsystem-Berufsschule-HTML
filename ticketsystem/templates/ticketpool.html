@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticketpool</title>
+<style>
+body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;height:100vh;background:#f3f4f6;}
+.sidebar{width:250px;background-color:#1f2937;color:white;padding-top:1rem;display:flex;flex-direction:column;height:100vh;}
+.menu-item{padding:0.8rem 1rem;cursor:pointer;user-select:none;}
+.menu-item:hover{background-color:#374151;}
+.submenu{display:none;flex-direction:column;padding-left:1rem;}
+.submenu .menu-item{padding:0.5rem 1rem;font-size:0.9rem;}
+.arrow{float:right;transition:0.3s;}
+.arrow.open{transform:rotate(90deg);}
+.content{flex:1;padding:2rem;overflow-y:auto;position:relative;}
+.role-container{position:absolute;right:2rem;top:1rem;display:flex;align-items:center;gap:1rem;}
+.role-badge{padding:0.4rem 0.9rem;border-radius:20px;font-size:0.9rem;font-weight:bold;color:white;}
+.role-user{background:#6b7280;}
+.role-support{background:#3b82f6;}
+.role-admin{background:#ef4444;}
+.logout-button{padding:0.4rem 0.9rem;background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;}
+.ticket-table{width:100%;border-collapse:collapse;margin-top:2rem;}
+.ticket-table th, .ticket-table td{border:1px solid #ccc;padding:0.5rem;text-align:left;}
+.ticket-table th{background:#e5e7eb;}
+.status-open{color:#f97316;font-weight:bold;}
+.status-closed{color:#10b981;font-weight:bold;}
+.status-inprogress{color:#3b82f6;font-weight:bold;}
+.popup-bg{display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000;}
+.popup-window{width:500px;background:white;padding:2rem;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.3);position:relative;}
+.popup-window input,.popup-window textarea{width:100%;padding:0.6rem;margin-top:0.5rem;margin-bottom:1rem;border:1px solid #ccc;border-radius:6px;resize:none;}
+.popup-window button{background:#1f2937;color:white;padding:0.6rem 1rem;border:none;border-radius:6px;cursor:pointer;}
+.popup-close{position:absolute;top:5px;right:10px;cursor:pointer;font-weight:bold;font-size:1.2rem;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+<h2 style="text-align:center;">Dashboard</h2>
+<div class="menu-item" onclick="location.href='home.html'">Home</div>
+<div class="menu-item" onclick="toggleSubmenu(this)">Tickets <span class="arrow">▸</span></div>
+<div class="submenu">
+<div class="menu-item" onclick="location.href='meine_tickets.html'">Meine Tickets</div>
+<div class="menu-item" onclick="location.href='ticketpool.html'">Ticketpool</div>
+<div class="menu-item" onclick="openCreatePopup()">Neues Ticket erstellen</div>
+</div>
+<div class="menu-item" onclick="openContactsPopup()">Kontakte</div>
+<div class="menu-item" onclick="location.href='aktivitaeten.html'">Aktivitäten</div>
+<div class="menu-item" onclick="location.href='auswertung.html'">Auswertung</div>
+<div class="menu-item" onclick="location.href='admin.html'">Admin</div>
+<div class="menu-item" onclick="location.href='einstellungen.html'">Einstellungen</div>
+</div>
+
+<div class="content">
+<div class="role-container">
+<div id="roleBadge" class="role-badge role-support">Rolle: Support-Agent</div>
+<button class="logout-button" onclick="location.href='login.html'">Logout</button>
+</div>
+
+<h1>Ticketpool</h1>
+
+<table class="ticket-table">
+<thead>
+<tr>
+<th>Ticket-ID</th>
+<th>Ticketname</th>
+<th>Ersteller</th>
+<th>Agent</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>#001</td>
+<td>Login funktioniert nicht</td>
+<td>Max</td>
+<td>Support-Team</td>
+<td class="status-open">Offen</td>
+</tr>
+<tr>
+<td>#002</td>
+<td>Laptop defekt</td>
+<td>Patrick</td>
+<td>Support-Team</td>
+<td class="status-inprogress">In Bearbeitung</td>
+</tr>
+<tr>
+<td>#003</td>
+<td>Ticket schließen</td>
+<td>Patrick</td>
+<td>Max</td>
+<td class="status-closed">Geschlossen</td>
+</tr>
+<tr>
+<td>#004</td>
+<td>Fehler bei Anmeldung</td>
+<td>Arda</td>
+<td>Max</td>
+<td class="status-open">Offen</td>
+</tr>
+<tr>
+<td>#005</td>
+<td>Drucker funktioniert nicht</td>
+<td>Max</td>
+<td>Support-Team</td>
+<td class="status-inprogress">In Bearbeitung</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- Popups -->
+<div class="popup-bg" id="contactsPopup" onclick="closePopup(event,'contactsPopup')">
+<div class="popup-window">
+<span class="popup-close" onclick="closeContactsPopup()">✖</span>
+<h3>Kontakte</h3>
+<ul>
+<li>Max – max@example.com</li>
+<li>Patrick – patrick@example.com</li>
+<li>Arda – arda@example.com</li>
+</ul>
+</div>
+</div>
+
+<div class="popup-bg" id="createPopup" onclick="closePopup(event,'createPopup')">
+<div class="popup-window">
+<span class="popup-close" onclick="closeCreatePopup()">✖</span>
+<h3>Neues Ticket erstellen</h3>
+<input placeholder="Ticketname">
+<textarea rows="6" placeholder="Beschreibung"></textarea>
+<button onclick="closeCreatePopup()">Erstellen</button>
+</div>
+</div>
+
+<script>
+const userRole="support";
+function toggleSubmenu(el){const submenu=el.nextElementSibling;const arrow=el.querySelector(".arrow");const isOpen=submenu.style.display==="block";submenu.style.display=isOpen?"none":"block";arrow.classList.toggle("open",!isOpen);}
+function openContactsPopup(){document.getElementById("contactsPopup").style.display="flex";}
+function closeContactsPopup(){document.getElementById("contactsPopup").style.display="none";}
+function openCreatePopup(){if(userRole==="user"){alert("❌ Keine Berechtigung, um Tickets zu erstellen.");return;}document.getElementById("createPopup").style.display="flex";}
+function closeCreatePopup(){document.getElementById("createPopup").style.display="none";}
+function closePopup(e,id){if(e.target.id===id)document.getElementById(id).style.display="none";}
+</script>
+
+</body>
+</html>
