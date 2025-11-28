@@ -81,8 +81,8 @@ body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;height:100vh;backgr
 <h3>Kontakte</h3>
 <ul>
 <li>Max Mustermann – max@example.com</li>
-<li>Erika Musterfrau – erika@example.com</li>
-<li>John Doe – john@example.com</li>
+<li>Patrick – patrick@example.com</li>
+<li>Arda – arda@example.com</li>
 </ul>
 </div>
 </div>
@@ -100,7 +100,6 @@ body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;height:100vh;backgr
 <script>
 const userRole="support";
 
-// Sidebar submenu
 function toggleSubmenu(el){
     const submenu=el.nextElementSibling;
     const arrow=el.querySelector(".arrow");
@@ -109,7 +108,6 @@ function toggleSubmenu(el){
     arrow.classList.toggle("open",!isOpen);
 }
 
-// Popups
 function openContactsPopup(){document.getElementById("contactsPopup").style.display="flex";}
 function closeContactsPopup(){document.getElementById("contactsPopup").style.display="none";}
 function openCreatePopup(){
@@ -118,12 +116,10 @@ function openCreatePopup(){
 }
 function closeCreatePopup(){document.getElementById("createPopup").style.display="none";}
 
-// Close popup by clicking background
 function closePopup(e,id){
     if(e.target.id===id) document.getElementById(id).style.display="none";
 }
 
-// Close on ESC
 document.addEventListener("keydown",function(e){
     if(e.key==="Escape"){
         closeContactsPopup();
