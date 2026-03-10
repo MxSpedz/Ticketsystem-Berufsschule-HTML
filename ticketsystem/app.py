@@ -1,77 +1,80 @@
-from users import users
+from flask import Flask, render_template, request, redirect, session
 
-tickets = []
+app = Flask(__name__)
+app.secret_key = "secretkey"
 
+# Fake User Daten
+users = {
+    "admin": {"password": "admin123", "role": "admin"},
+    "max": {"password": "1234", "role": "support"},
+    "arda": {"password": "1234", "role": "user"}
+}
+
+# Fake Tickets (Python Liste statt Datenbank)
+tickets = [
+    {"id":1,"name":"Login funktioniert nicht","creator":"Max","agent":"Support-Team","status":"Offen"},
+    {"id":2,"name":"Laptop defekt","creator":"Arda","agent":"Support-Team","status":"In Bearbeitung"},
+    {"id":3,"name":"Ticket schließen","creator":"Arda","agent":"Max","status":"Geschlossen"}
+]
+
+
+@app.route("/")
+def index():
+    return render_template("login.html")
+
+
+@app.route("/login", methods=["POST"])
 def login():
-    print("=== Login ===")
-    username = input("Benutzername: ")
-    password = input("Passwort: ")
+
+    username = request.form["username"]
+    password = request.form["password"]
 
     if username in users and users[username]["password"] == password:
-        print("Login erfolgreich!\n")
-        return username
-    else:
-        print("Falsche Login-Daten\n")
-        return None
+
+        session["user"] = username
+        session["role"] = users[username]["role"]
+
+        return redirect("/meine_tickets")
+
+    return redirect("/")
 
 
-def create_ticket(user):
-    title = input("Titel des Tickets: ")
-    description = input("Beschreibung: ")
+@app.route("/meine_tickets")
+def meine_tickets():
 
-    ticket = {
-        "user": user,
-        "title": title,
-        "description": description,
-        "status": "offen"
-    }
+    if "user" not in session:
+        return redirect("/")
 
-    tickets.append(ticket)
-    print("Ticket erstellt!\n")
+    user = session["user"]
 
+    user_tickets = [t for t in tickets if t["creator"].lower() == user.lower()]
 
-def show_tickets():
-    print("\n=== Alle Tickets ===")
-
-    if not tickets:
-        print("Keine Tickets vorhanden\n")
-        return
-
-    for i, ticket in enumerate(tickets):
-        print(f"\nTicket #{i+1}")
-        print("User:", ticket["user"])
-        print("Titel:", ticket["title"])
-        print("Beschreibung:", ticket["description"])
-        print("Status:", ticket["status"])
+    return render_template(
+        "meine_tickets.html",
+        tickets=user_tickets,
+        role=session["role"]
+    )
 
 
-def main():
-    user = None
+@app.route("/ticketpool")
+def ticketpool():
 
-    while not user:
-        user = login()
+    if "user" not in session:
+        return redirect("/")
 
-    while True:
-        print("\n=== Menü ===")
-        print("1 - Ticket erstellen")
-        print("2 - Tickets anzeigen")
-        print("3 - Beenden")
+    return render_template(
+        "ticketpool.html",
+        tickets=tickets,
+        role=session["role"]
+    )
 
-        choice = input("Auswahl: ")
 
-        if choice == "1":
-            create_ticket(user)
+@app.route("/logout")
+def logout():
 
-        elif choice == "2":
-            show_tickets()
-
-        elif choice == "3":
-            print("Programm beendet")
-            break
-
-        else:
-            print("Ungültige Auswahl")
+    session.clear()
+    return redirect("/")
 
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
