@@ -71,31 +71,18 @@ body{margin:0;font-family:'Segoe UI',sans-serif;display:flex;height:100vh;backgr
 </tr>
 </thead>
 <tbody>
+{% for ticket in tickets %}
 <tr>
-<td>#001</td>
-<td>Login funktioniert nicht</td>
-<td>Max</td>
-<td>Support-Team</td>
-<td class="status-open">Offen</td>
+<td>#{{ticket.id}}</td>
+<td>{{ticket.name}}</td>
+<td>{{ticket.creator}}</td>
+<td>{{ticket.agent}}</td>
+<td>{{ticket.status}}</td>
 </tr>
-<tr>
-<td>#002</td>
-<td>Laptop defekt</td>
-<td>Arda</td>
-<td>Support-Team</td>
-<td class="status-inprogress">In Bearbeitung</td>
-</tr>
-<tr>
-<td>#003</td>
-<td>Ticket schließen</td>
-<td>Arda</td>
-<td>Max</td>
-<td class="status-closed">Geschlossen</td>
-</tr>
+{% endfor %}
 </tbody>
 </table>
 </div>
-
 <!-- Popups -->
 <div class="popup-bg" id="contactsPopup" onclick="closePopup(event,'contactsPopup')">
 <div class="popup-window">
