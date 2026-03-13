@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auswertung</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    height: 100vh;
+    background: #f3f4f6;
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #1f2937;
+    color: white;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.menu-item {
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    user-select: none;
+}
+.menu-item:hover { background-color: #374151; }
+.submenu { display: none; flex-direction: column; padding-left: 1rem; }
+.submenu .menu-item { padding: 0.5rem 1rem; font-size: 0.9rem; }
+.arrow { float: right; transition: 0.3s; }
+.arrow.open { transform: rotate(90deg); }
+
+.content { flex: 1; padding: 2rem; overflow-y: auto; position: relative; }
+
+.role-container {
+    position: absolute;
+    right: 2rem;
+    top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.role-badge {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: white;
+}
+.role-user { background: #6b7280; }
+.role-support { background: #3b82f6; }
+.role-admin { background: #ef4444; }
+
+.logout-button {
+    padding: 0.4rem 0.9rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Pop-ups */
+.popup-bg {
+    display: none;
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.popup-window {
+    width: 500px;
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    position: relative;
+}
+.popup-window input,
+.popup-window textarea { 
+    width: 100%; 
+    padding: 0.6rem; 
+    margin-top: 0.5rem; 
+    margin-bottom: 1rem; 
+    border: 1px solid #ccc; 
+    border-radius: 6px; 
+    resize: none; 
+}
+.popup-window button { 
+    background: #1f2937; 
+    color: white; 
+    padding: 0.6rem 1rem; 
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+}
+.popup-close { 
+    position: absolute; 
+    top: 5px; right: 10px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 1.2rem; 
+}
+
+.page-box { background:white; padding:1rem; border-radius:10px; margin-top:1rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2 style="text-align:center;">Dashboard</h2>
+    <div class="menu-item" onclick="location.href='/home.html'">Home</div>
+
+    <div class="menu-item" onclick="toggleSubmenu(this)">Tickets <span class="arrow">▸</span></div>
+    <div class="submenu">
+        <div class="menu-item" onclick="location.href='/meine_tickets'">Meine Tickets</div>
+        <div class="menu-item" onclick="location.href='/ticketpool'">Ticketpool</div>
+        <div class="menu-item" onclick="openCreatePopup()">Neues Ticket erstellen</div>
+    </div>
+
+    <div class="menu-item" onclick="openContactsPopup()">Kontakte</div>
+    <div class="menu-item" onclick="location.href='/aktivitaeten'">Aktivitäten</div>
+    <div class="menu-item" onclick="location.href='/auswertung'">Auswertung</div>
+    <div class="menu-item" onclick="location.href='/admin'">Admin</div>
+    <div class="menu-item" onclick="location.href='/einstellungen'">Einstellungen</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+    <div class="role-container">
+        <div id="roleBadge" class="role-badge role-support">Rolle: Support-Agent</div>
+        <button class="logout-button" onclick="location.href='/login'">Logout</button>
+    </div>
+
+    <h1>Auswertung</h1>
+
+    <div class="page-box">
+        <h3>Beispiel Diagramm / KPI</h3>
+        <canvas id="ticketChart"></canvas>
+    </div>
+</div>
+
+<div class="popup-bg" id="contactsPopup" onclick="closePopup(event,'contactsPopup')">
+    <div class="popup-window">
+        <span class="popup-close" onclick="closeContactsPopup()">✖</span>
+        <h3>Kontakte</h3>
+        <ul>
+            <li>Max Mustermann – max@example.com</li>
+            <li>Erika Musterfrau – erika@example.com</li>
+            <li>John Doe – john@example.com</li>
+        </ul>
+    </div>
+</div>
+
+<div class="popup-bg" id="createPopup" onclick="closePopup(event,'createPopup')">
+    <div class="popup-window">
+        <span class="popup-close" onclick="closeCreatePopup()">✖</span>
+        <h3>Neues Ticket erstellen</h3>
+        <input placeholder="Ticketname">
+        <textarea rows="6" placeholder="Beschreibung"></textarea>
+        <button onclick="closeCreatePopup()">Erstellen</button>
+    </div>
+</div>
+
+<script>
+const userRole = "support";
+
+function toggleSubmenu(element){
+    const submenu = element.nextElementSibling;
+    const arrow = element.querySelector(".arrow");
+    const isOpen = submenu.style.display === "block";
+    submenu.style.display = isOpen ? "none" : "block";
+    arrow.classList.toggle("open", !isOpen);
+}
+
+function openContactsPopup(){ document.getElementById("contactsPopup").style.display="flex"; }
+function closeContactsPopup(){ document.getElementById("contactsPopup").style.display="none"; }
+
+function openCreatePopup(){
+    if(userRole==="user"){ alert("❌ Keine Berechtigung, um Tickets zu erstellen."); return; }
+    document.getElementById("createPopup").style.display="flex";
+}
+function closeCreatePopup(){ document.getElementById("createPopup").style.display="none"; }
+
+function closePopup(e,id){ if(e.target.id===id) document.getElementById(id).style.display="none"; }
+
+new Chart(document.getElementById("ticketChart"),{
+    type:'bar',
+    data:{labels:["Mo","Di","Mi","Do","Fr"],datasets:[{label:"Patrick",data:[3,2,4,1,3],backgroundColor:"#3b82f6"},{label:"Arda",data:[1,3,2,2,2],backgroundColor:"#f97316"},{label:"Max",data:[2,1,3,2,1],backgroundColor:"#10b981"}]},
+    options:{responsive:true,scales:{y:{beginAtZero:true}}}
+});
+</script>
+
+</body>
+</html>
